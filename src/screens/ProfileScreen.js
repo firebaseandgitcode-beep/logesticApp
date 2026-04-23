@@ -5,6 +5,7 @@ import {
 } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
 import { useAuth } from '../context/AuthContext'
+import { api } from '../lib/api'
 
 const JOB_LABELS = {
   create_trip: 'Trip Creator',
@@ -36,11 +37,23 @@ export default function ProfileScreen() {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
+      base64: true,
     })
     if (!result.canceled && result.assets[0]) {
-      const uri = result.assets[0].uri
-      setAvatarUri(uri)
-      updateAvatar(uri)
+      const asset = result.assets[0]
+      // Show local uri immediately for responsive UI
+      setAvatarUri(asset.uri)
+      try {
+        const base64Data = `data:image/jpeg;base64,${asset.base64}`
+        const uploadResult = await api.upload(base64Data, 'management')
+        const remoteUrl = uploadResult.url
+        setAvatarUri(remoteUrl)
+        updateAvatar(remoteUrl)
+      } catch (e) {
+        // Fall back to local uri if upload fails
+        updateAvatar(asset.uri)
+        Alert.alert('Upload failed', 'Profile picture saved locally but could not be uploaded.')
+      }
     }
   }
 

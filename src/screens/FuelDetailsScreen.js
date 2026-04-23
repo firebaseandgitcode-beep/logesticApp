@@ -45,7 +45,7 @@ export default function FuelDetailsScreen() {
     setShowForm(true)
   }
 
-  const handleAddFuel = () => {
+  const handleAddFuel = async () => {
     if (!fuelForm.litres || !fuelForm.perLtrCost) {
       Alert.alert('Required', 'Please enter litres and cost per litre.')
       return
@@ -58,9 +58,13 @@ export default function FuelDetailsScreen() {
       perLtrCost: Number(fuelForm.perLtrCost),
     }
     const updatedEntries = [...(selectedTrip.fuelEntries || []), entry]
-    updateTrip(selectedTrip.id, { fuelEntries: updatedEntries })
-    setSelectedTrip(prev => ({ ...prev, fuelEntries: updatedEntries }))
-    setShowForm(false)
+    try {
+      await updateTrip(selectedTrip.id, { fuelEntries: updatedEntries })
+      setSelectedTrip(prev => ({ ...prev, fuelEntries: updatedEntries }))
+      setShowForm(false)
+    } catch (e) {
+      Alert.alert('Error', e.message || 'Failed to save fuel entry. Please try again.')
+    }
   }
 
   const setF = (k) => (v) => setFuelForm(f => ({ ...f, [k]: v }))

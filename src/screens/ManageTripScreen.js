@@ -4,7 +4,7 @@ import {
   StyleSheet, Alert,
 } from 'react-native'
 import { useData } from '../context/DataContext'
-import { initialDrivers, tripRevenue, tripFuelCost, tripAllExpenses, tripNetPay } from '../data/store'
+import { tripRevenue, tripFuelCost, tripAllExpenses, tripNetPay } from '../data/store'
 
 const STATUS_COLORS = {
   planned: { bg: '#fef3c7', text: '#92400e' },
@@ -47,10 +47,10 @@ function VerifyButton({ label, checked, onPress, disabled }) {
 }
 
 function TripDetail({ trip, onBack }) {
-  const { updateTrip, trips } = useData()
+  const { updateTrip, trips, drivers } = useData()
   const updated = trips.find(t => t.id === trip.id) || trip
 
-  const driver = initialDrivers.find(d => d.driverId === updated.driverId)
+  const driver = drivers.find(d => d.driverId === updated.driverId)
   const revenue = tripRevenue(updated)
   const fuel = tripFuelCost(updated)
   const expenses = tripAllExpenses(updated)
@@ -66,7 +66,16 @@ function TripDetail({ trip, onBack }) {
       'Mark trip details as correct and verified? The trip creator will no longer be able to edit them.',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Verify', onPress: () => updateTrip(updated.id, { verifiedTripDetails: true }) },
+        {
+          text: 'Verify',
+          onPress: async () => {
+            try {
+              await updateTrip(updated.id, { verifiedTripDetails: true })
+            } catch (e) {
+              Alert.alert('Error', e.message || 'Failed to verify trip details.')
+            }
+          },
+        },
       ]
     )
   }
@@ -81,7 +90,16 @@ function TripDetail({ trip, onBack }) {
       'Mark fuel details as correct and verified? The fuel manager will no longer be able to edit them.',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Verify', onPress: () => updateTrip(updated.id, { verifiedFuelDetails: true }) },
+        {
+          text: 'Verify',
+          onPress: async () => {
+            try {
+              await updateTrip(updated.id, { verifiedFuelDetails: true })
+            } catch (e) {
+              Alert.alert('Error', e.message || 'Failed to verify fuel details.')
+            }
+          },
+        },
       ]
     )
   }

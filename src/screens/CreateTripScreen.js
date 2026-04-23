@@ -5,7 +5,6 @@ import {
 } from 'react-native'
 import { useAuth } from '../context/AuthContext'
 import { useData } from '../context/DataContext'
-import { initialDrivers, initialVehicles } from '../data/store'
 
 const STATUS_COLORS = {
   planned: { bg: '#fef3c7', text: '#92400e' },
@@ -25,7 +24,7 @@ const EMPTY_FORM = {
 
 export default function CreateTripScreen() {
   const { currentUser } = useAuth()
-  const { trips, updateTrip, addTrip } = useData()
+  const { trips, drivers, updateTrip, addTrip } = useData()
   const [showForm, setShowForm] = useState(false)
   const [editTrip, setEditTrip] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
@@ -65,7 +64,7 @@ export default function CreateTripScreen() {
     setShowForm(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.originCity || !form.destCity || !form.commodity) {
       Alert.alert('Required Fields', 'Please fill in origin city, destination city, and commodity.')
       return
@@ -80,12 +79,16 @@ export default function CreateTripScreen() {
       verifiedCreate: true,
       createdBy: currentUser?.managerId,
     }
-    if (editTrip) {
-      updateTrip(editTrip.id, data)
-    } else {
-      addTrip(data)
+    try {
+      if (editTrip) {
+        await updateTrip(editTrip.id, data)
+      } else {
+        await addTrip(data)
+      }
+      setShowForm(false)
+    } catch (e) {
+      Alert.alert('Error', e.message || 'Failed to save trip. Please try again.')
     }
-    setShowForm(false)
   }
 
   const set = (k) => (v) => setForm(f => ({ ...f, [k]: v }))
@@ -118,7 +121,7 @@ export default function CreateTripScreen() {
         </Text>
         {trip.driverId && (
           <Text style={styles.tripMeta}>
-            Driver: {initialDrivers.find(d => d.driverId === trip.driverId)?.name || trip.driverId}
+            Driver: {drivers.find(d => d.driverId === trip.driverId)?.name || trip.driverId}
           </Text>
         )}
         {isLocked && (

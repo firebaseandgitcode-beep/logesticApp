@@ -11,13 +11,13 @@ export default function LoginScreen() {
   const [showPwd, setShowPwd] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!form.username.trim() || !form.password.trim()) {
       Alert.alert('Error', 'Please enter your username and password')
       return
     }
     setLoading(true)
-    const result = login(form.username.trim(), form.password)
+    const result = await login(form.username.trim(), form.password)
     setLoading(false)
     if (result.error) {
       Alert.alert('Login Failed', result.error)

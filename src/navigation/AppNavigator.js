@@ -1,6 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { Text } from 'react-native'
+import { Text, View, ActivityIndicator, StyleSheet } from 'react-native'
 import { useAuth } from '../context/AuthContext'
 import LoginScreen from '../screens/LoginScreen'
 import CreateTripScreen from '../screens/CreateTripScreen'
@@ -9,6 +9,15 @@ import ManageTripScreen from '../screens/ManageTripScreen'
 import ProfileScreen from '../screens/ProfileScreen'
 
 const Tab = createBottomTabNavigator()
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f9fafb',
+  },
+})
 
 const TAB_ICONS = {
   'Create Trip': '🗺',
@@ -26,7 +35,15 @@ function TabIcon({ label, focused }) {
 }
 
 export default function AppNavigator() {
-  const { currentUser } = useAuth()
+  const { currentUser, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    )
+  }
 
   if (!currentUser) {
     return (
