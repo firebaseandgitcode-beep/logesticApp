@@ -80,7 +80,7 @@ export default function AppNavigator() {
           <Tab.Screen
             name="Create Trip"
             component={CreateTripScreen}
-            options={{ title: 'Create Trip', headerTitle: 'My Trips' }}
+            options={{ title: 'Create Trip', headerTitle: 'Company Trips' }}
           />
         )}
         {jobs.includes('fuel_details') && (

@@ -95,7 +95,7 @@ export default function CreateTripScreen() {
   const [editTrip, setEditTrip] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
 
-  const myTrips = trips.filter(t => t.createdBy === currentUser?.managerId)
+  const companyTrips = trips
 
   const openCreate = () => {
     setEditTrip(null)
@@ -222,13 +222,13 @@ export default function CreateTripScreen() {
   return (
     <View style={styles.container}>
       <FlatList
-        data={myTrips}
+        data={companyTrips}
         keyExtractor={t => String(t.id)}
         renderItem={renderTrip}
         contentContainerStyle={styles.list}
         ListHeaderComponent={() => (
           <View style={styles.listHeader}>
-            <Text style={styles.listTitle}>My Trips ({myTrips.length})</Text>
+            <Text style={styles.listTitle}>Company Trips ({companyTrips.length})</Text>
             <TouchableOpacity style={styles.createBtn} onPress={openCreate}>
               <Text style={styles.createBtnText}>+ New Trip</Text>
             </TouchableOpacity>
