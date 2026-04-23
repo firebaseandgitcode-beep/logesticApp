@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "mylogestic"
-  }
+  },
+  "targets": {
+    "mylogestic": {
+      "hosting": {
+        "app": [
+          "mylogestic-app"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
