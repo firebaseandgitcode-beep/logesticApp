@@ -6,6 +6,65 @@ import {
 import { useAuth } from '../context/AuthContext'
 import { useData } from '../context/DataContext'
 
+function SelectModal({ visible, title, options, onSelect, onClose }) {
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <TouchableOpacity style={sel.overlay} activeOpacity={1} onPress={onClose} />
+      <View style={sel.sheet}>
+        <View style={sel.header}>
+          <Text style={sel.title}>{title}</Text>
+          <TouchableOpacity onPress={onClose}>
+            <Text style={sel.close}>✕</Text>
+          </TouchableOpacity>
+        </View>
+        <FlatList
+          data={options}
+          keyExtractor={o => o.value}
+          renderItem={({ item }) => (
+            <TouchableOpacity style={sel.option} onPress={() => { onSelect(item.value); onClose() }}>
+              <Text style={sel.optionLabel}>{item.label}</Text>
+              {item.sub ? <Text style={sel.optionSub}>{item.sub}</Text> : null}
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={<Text style={sel.empty}>No options available</Text>}
+        />
+      </View>
+    </Modal>
+  )
+}
+
+function SelectField({ value, placeholder, onPress, disabled }) {
+  return (
+    <TouchableOpacity
+      style={[styles.input, sel.field, disabled && sel.fieldDisabled]}
+      onPress={disabled ? undefined : onPress}
+      activeOpacity={0.7}
+    >
+      <Text style={value ? sel.fieldValue : sel.fieldPlaceholder} numberOfLines={1}>
+        {value || placeholder}
+      </Text>
+      <Text style={sel.chevron}>▾</Text>
+    </TouchableOpacity>
+  )
+}
+
+const sel = StyleSheet.create({
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
+  sheet: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '60%', paddingBottom: 32 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18, borderBottomWidth: 1, borderColor: '#f3f4f6' },
+  title: { fontSize: 15, fontWeight: '700', color: '#111827' },
+  close: { fontSize: 16, color: '#6b7280', padding: 4 },
+  option: { paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderColor: '#f9fafb' },
+  optionLabel: { fontSize: 14, fontWeight: '600', color: '#111827' },
+  optionSub: { fontSize: 12, color: '#9ca3af', marginTop: 2 },
+  empty: { textAlign: 'center', padding: 24, color: '#9ca3af', fontSize: 14 },
+  field: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  fieldDisabled: { backgroundColor: '#f9fafb', opacity: 0.7 },
+  fieldValue: { fontSize: 14, color: '#111827', flex: 1 },
+  fieldPlaceholder: { fontSize: 14, color: '#9ca3af', flex: 1 },
+  chevron: { fontSize: 14, color: '#9ca3af', marginLeft: 8 },
+})
+
 const STATUS_COLORS = {
   planned: { bg: '#fef3c7', text: '#92400e' },
   in_progress: { bg: '#dbeafe', text: '#1e40af' },
@@ -28,6 +87,8 @@ export default function CreateTripScreen() {
   const [showForm, setShowForm] = useState(false)
   const [editTrip, setEditTrip] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
+  const [driverModal, setDriverModal] = useState(false)
+  const [vehicleModal, setVehicleModal] = useState(false)
 
   const myTrips = trips.filter(t => t.createdBy === currentUser?.managerId)
 
@@ -197,8 +258,16 @@ export default function CreateTripScreen() {
             </View>
 
             <Text style={styles.sectionTitle}>Driver & Vehicle</Text>
-            <TextInput style={styles.input} value={form.driverId} onChangeText={set('driverId')} placeholder="Driver ID (e.g. DRV001)" placeholderTextColor="#9ca3af" autoCapitalize="characters" />
-            <TextInput style={styles.input} value={form.vehicleNumber} onChangeText={set('vehicleNumber')} placeholder="Vehicle Number" placeholderTextColor="#9ca3af" autoCapitalize="characters" />
+            <SelectField
+              value={form.driverId ? `${drivers.find(d => d.driverId === form.driverId)?.name || ''} (${form.driverId})` : ''}
+              placeholder="Select driver…"
+              onPress={() => setDriverModal(true)}
+            />
+            <SelectField
+              value={form.vehicleNumber || ''}
+              placeholder="Select vehicle…"
+              onPress={() => setVehicleModal(true)}
+            />
 
             <Text style={styles.sectionTitle}>Driver Payment</Text>
             <View style={styles.row}>
@@ -227,6 +296,34 @@ export default function CreateTripScreen() {
           </ScrollView>
         </View>
       </Modal>
+
+      <SelectModal
+        visible={driverModal}
+        title="Select Driver"
+        options={drivers
+          .filter(d => d.status === 'active')
+          .map(d => ({
+            value: d.driverId,
+            label: d.name,
+            sub: `${d.driverId}${d.assignedVehicle ? ` · Vehicle: ${d.assignedVehicle}` : ' · No vehicle assigned'}`,
+          }))}
+        onSelect={v => { set('driverId')(v); const d = drivers.find(x => x.driverId === v); if (d?.assignedVehicle && !form.vehicleNumber) set('vehicleNumber')(d.assignedVehicle) }}
+        onClose={() => setDriverModal(false)}
+      />
+
+      <SelectModal
+        visible={vehicleModal}
+        title="Select Vehicle"
+        options={vehicles
+          .filter(v => v.status === 'active')
+          .map(v => ({
+            value: v.vehicleNumber,
+            label: v.vehicleNumber,
+            sub: `${v.make} ${v.vehicleType}${v.assignedDriver ? ` · Driver: ${v.assignedDriver}` : ''}`,
+          }))}
+        onSelect={v => set('vehicleNumber')(v)}
+        onClose={() => setVehicleModal(false)}
+      />
     </View>
   )
 }

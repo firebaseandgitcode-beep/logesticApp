@@ -1,13 +1,12 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { api } from '../lib/api'
 import { tripStatus } from '../data/store'
+import { useAuth } from './AuthContext'
 
 const DataContext = createContext(null)
 
-const TOKEN_KEY = 'logestic_staff_token'
-
 export function DataProvider({ children }) {
+  const { currentUser } = useAuth()
   const [trips, setTrips] = useState([])
   const [drivers, setDrivers] = useState([])
   const [vehicles, setVehicles] = useState([])
@@ -16,8 +15,6 @@ export function DataProvider({ children }) {
 
   const loadData = useCallback(async () => {
     try {
-      const token = await AsyncStorage.getItem(TOKEN_KEY)
-      if (!token) return
       setLoading(true)
       setError(null)
       const [tripsRes, driversRes, vehiclesRes] = await Promise.all([
@@ -35,10 +32,16 @@ export function DataProvider({ children }) {
     }
   }, [])
 
-  // Load data on mount if token exists
+  // Re-fetch whenever the logged-in user changes
   useEffect(() => {
+    if (!currentUser) {
+      setTrips([])
+      setDrivers([])
+      setVehicles([])
+      return
+    }
     loadData()
-  }, [loadData])
+  }, [currentUser?.id, loadData])
 
   const updateTrip = async (id, updates) => {
     // Optimistic update
@@ -51,7 +54,6 @@ export function DataProvider({ children }) {
     try {
       await api.updateTrip(id, updates)
     } catch (e) {
-      // Reload to revert optimistic update on failure
       loadData()
       throw e
     }
@@ -60,7 +62,6 @@ export function DataProvider({ children }) {
   const addTrip = async (tripData) => {
     const result = await api.createTrip(tripData)
     const newTrip = result.trip
-    // Reload trips to get fresh server state
     await loadData()
     return newTrip
   }
