@@ -1,12 +1,12 @@
 {
   "projects": {
-    "default": "mylogestic"
+    "default": "mylogestic1"
   },
   "targets": {
-    "mylogestic": {
+    "mylogestic1": {
       "hosting": {
         "app": [
-          "mylogestic-app"
+          "mylogestic1-app"
         ]
       }
     }

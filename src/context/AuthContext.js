@@ -7,6 +7,26 @@ const AuthContext = createContext(null)
 const TOKEN_KEY = 'logestic_staff_token'
 const USER_KEY = 'logestic_staff_user'
 
+const LOCAL_LOGIN = {
+  username: 'admin.local',
+  password: 'Admin@1234',
+  token: 'local-mobile-dev-token',
+  user: {
+    id: 'local-staff',
+    managerId: 'MGRLOCAL',
+    name: 'Local Admin',
+    email: 'admin@local.test',
+    phone: '9999999999',
+    role: 'Local Admin',
+    customRole: 'Local Admin',
+    jobs: ['create_trip', 'fuel_details', 'manage_trip'],
+    avatar: null,
+    bankDetails: null,
+    status: 'active',
+    ownerId: 'local-owner',
+  },
+}
+
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -32,6 +52,13 @@ export function AuthProvider({ children }) {
 
   const login = async (username, password) => {
     try {
+      if (__DEV__ && username.toLowerCase() === LOCAL_LOGIN.username && password === LOCAL_LOGIN.password) {
+        await AsyncStorage.setItem(TOKEN_KEY, LOCAL_LOGIN.token)
+        await AsyncStorage.setItem(USER_KEY, JSON.stringify(LOCAL_LOGIN.user))
+        setCurrentUser(LOCAL_LOGIN.user)
+        return { success: true }
+      }
+
       const result = await api.staffLogin({ username, password })
       const { token, user } = result
       await AsyncStorage.setItem(TOKEN_KEY, token)

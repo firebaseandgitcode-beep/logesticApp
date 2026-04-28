@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-const BASE = 'https://us-central1-mylogestic.cloudfunctions.net/api'
+const BASE = 'https://us-central1-mylogestic1.cloudfunctions.net/api'
 
 async function request(path, options = {}) {
   const token = await AsyncStorage.getItem('logestic_staff_token')

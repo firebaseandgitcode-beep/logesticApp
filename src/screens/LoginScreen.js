@@ -43,6 +43,11 @@ export default function LoginScreen() {
         <View style={styles.card}>
           <Text style={styles.title}>Sign In</Text>
           <Text style={styles.subtitle}>Use your management credentials</Text>
+          {__DEV__ && (
+            <Text style={styles.devCreds}>
+              Local login: admin.local / Admin@1234
+            </Text>
+          )}
 
           <View style={styles.field}>
             <Text style={styles.label}>Username</Text>
@@ -123,6 +128,16 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 4 },
   subtitle: { fontSize: 13, color: '#6b7280', marginBottom: 20 },
+  devCreds: {
+    fontSize: 12,
+    color: '#92400e',
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 16,
+  },
   field: { marginBottom: 16 },
   label: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 6 },
   input: {
